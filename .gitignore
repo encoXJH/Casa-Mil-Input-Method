@@ -1,0 +1,62 @@
+# ---- IDE / 本地工具元数据（不要进仓库）----
+.codeartsdoer/
+.security/
+.idea/
+.vs/
+.vscode/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 构建产物 ----
+build/
+out/
+dist/
+target/
+bin/
+obj/
+Debug/
+Release/
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.pdb
+*.ilk
+*.exp
+*.class
+*.pyc
+__pycache__/
+
+# ---- 日志与临时文件 ----
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+
+# ---- 密钥与本地配置（绝对不要进仓库）----
+.env
+.env.*
+*.pfx
+*.p12
+*.keystore
+*.jks
+secrets.json
+local.settings.json
+
+# ---- 输入法项目特有：用户数据与大体积词库 ----
+userdata/
+user_dict/
+*.userdb
+*.udict
+# 大词库建议走 Git LFS：git lfs track "*.dict"
+# 或者打包成 Release 附件，仓库里只放下载脚本
+# *.dict
