@@ -6,6 +6,7 @@
 .vscode/
 *.user
 *.suo
+*.iml
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -34,6 +35,17 @@ Release/
 *.pyc
 __pycache__/
 
+# ---- Android / Gradle / 本地工具链 ----
+.toolchain/
+.gradle/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.hprof
+
 # ---- 日志与临时文件 ----
 *.log
 logs/
@@ -52,11 +64,8 @@ temp/
 secrets.json
 local.settings.json
 
-# ---- 输入法项目特有：用户数据与大体积词库 ----
+# ---- 输入法项目特有：用户数据与个人词库 ----
 userdata/
 user_dict/
 *.userdb
 *.udict
-# 大词库建议走 Git LFS：git lfs track "*.dict"
-# 或者打包成 Release 附件，仓库里只放下载脚本
-# *.dict
