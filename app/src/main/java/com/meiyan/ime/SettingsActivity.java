@@ -168,7 +168,7 @@ public class SettingsActivity extends Activity {
     }
 
     private void addAiSection() {
-        section("AI 文段改写（DeepSeek）");
+        section("AI 改写（DeepSeek）");
         body("仅在主动点击改写按钮时联网；Key 只存本机，不以明文展示。\n按钮名称 / 提示词 / 资料在下一节自定义。");
         switchRow("启用 AI 改写", prefs.getBool(Prefs.AI_ON, false), (b, c) -> {
             prefs.putBool(Prefs.AI_ON, c);

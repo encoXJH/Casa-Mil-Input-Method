@@ -1,6 +1,6 @@
 Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
 Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
-LOAD 283ms  词库 91966 桶 / 135003 词 · 导入 0 · 自造 0 · 加载 269ms
+LOAD 274ms  词库 91966 桶 / 135003 词 · 导入 0 · 自造 0 · 加载 261ms
 [PASS] 首位 lt -> 聊天  cand=聊天,聊天记录,聊天室,蓝天,联通,老头,轮胎,楼梯 size=24
 [PASS] 首位 nh -> 你好  cand=你好,女孩,男孩,内涵,年会,暖和,农活,怒火 size=24
 [PASS] 包含 liaot -> 聊天  cand=辽太祖,聊天 size=2
@@ -20,6 +20,9 @@ LOAD 283ms  词库 91966 桶 / 135003 词 · 导入 0 · 自造 0 · 加载 269m
 [PASS] 第二字 校->名首位  [名, 明, 命, 鸣, 洺, 冥, 铭, 茗, 姳, 佲, 螟, 眳, 眀, 瞑, 溟, 暝, 酩, 朙, 椧, 蓂, 鳴, 凕, 嫇, 慏, 掵, 榠, 猽, 覭, 詺, 鄍]
 [PASS] 第二字 小->明首位  [明, 名, 命, 鸣, 洺, 冥, 铭, 茗, 姳, 佲, 螟, 眳, 眀, 瞑, 溟, 暝, 酩, 朙, 椧, 蓂, 鳴, 凕, 嫇, 慏, 掵, 榠, 猽, 覭, 詺, 鄍]
 [PASS] 联想 天 含 聊天记录  [聊天记录, 聊天室, 聊天吗, 天安门, 天下, 天然, 天津, 天门, 天气, 天地]
+[PASS] 联想后缀 聊天室  室
+[PASS] 联想后缀 天安门  安门
+[PASS] 联想后缀 不回带自身  
 [PASS] lx 初始首位 联系  cand=联系,练习,理想,类型,路线,连续,利息,流行 size=24
 [PASS] lx 初始 联想 约第11位  index=10
 [PASS] lx 记忆3次后首位 联想  cand=联想,联系,练习,理想,类型,路线,连续,利息 size=24
@@ -34,5 +37,5 @@ LOAD 283ms  词库 91966 桶 / 135003 词 · 导入 0 · 自造 0 · 加载 269m
 [PASS] 导入4格式合计>=4条  n=5
 [PASS] 导入立即生效 测试词  [第三个词, 测试词]
 [PASS] 导入单候选行收下 测试员  [测试员, 测试]
-[PASS] 热态候选平均 <5ms  3561.7 us/call
-RESULT pass=34 fail=0
+[PASS] 热态候选平均 <5ms  3638.9 us/call
+RESULT pass=37 fail=0

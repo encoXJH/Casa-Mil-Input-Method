@@ -280,6 +280,19 @@ public final class PinyinEngine {
         return new ArrayList<>(arr.subList(0, Math.min(10, arr.size())));
     }
 
+    public static String assocSuffix(String word, String candidate) {
+        if (candidate == null || candidate.isEmpty()) return "";
+        if (word == null || word.isEmpty()) return candidate;
+        if (candidate.equals(word)) return "";
+        if (candidate.startsWith(word)) return candidate.substring(word.length());
+        char last = word.charAt(word.length() - 1);
+        if (candidate.length() == 1) {
+            return candidate.charAt(0) == last ? "" : candidate;
+        }
+        if (candidate.charAt(0) == last) return candidate.substring(1);
+        return candidate;
+    }
+
     public boolean isFirstCharCandidate(String input, String w) {
         if (w == null || w.length() != 1) return false;
         ArrayList<String> syls = splitSyllables(input);

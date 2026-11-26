@@ -87,6 +87,12 @@ public class EngineTest {
 
         List<String> as = eng.associate("天");
         check("联想 天 含 聊天记录", as.contains("聊天记录"), as.toString());
+        check("联想后缀 聊天室", PinyinEngine.assocSuffix("聊天", "聊天室").equals("室"),
+                PinyinEngine.assocSuffix("聊天", "聊天室"));
+        check("联想后缀 天安门", PinyinEngine.assocSuffix("聊天", "天安门").equals("安门"),
+                PinyinEngine.assocSuffix("聊天", "天安门"));
+        check("联想后缀 不回带自身", PinyinEngine.assocSuffix("聊天", "聊天").isEmpty(),
+                PinyinEngine.assocSuffix("聊天", "聊天"));
 
         List<String> lx0 = eng.candidates("lx");
         check("lx 初始首位 联系", !lx0.isEmpty() && lx0.get(0).equals("联系"), head(lx0));

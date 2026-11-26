@@ -494,7 +494,7 @@ public class MiraImeService extends InputMethodService {
             paint.setStrokeWidth(dp(1.5f));
             float cx = getWidth() / 2f;
             float cy = getHeight() / 2f;
-            float r = Math.min(getWidth(), getHeight()) / 2f - dp(7);
+            float r = Math.min(getWidth(), getHeight()) / 2f - dp(9);
             canvas.drawCircle(cx, cy, r, paint);
             paint.setStyle(Paint.Style.FILL);
             float er = Math.max(dp(1.2f), r * 0.075f);
@@ -715,17 +715,7 @@ public class MiraImeService extends InputMethodService {
 
     private void addBottomRow(boolean nine) {
         LinearLayout row = baseRow();
-        TextView num = makeFunc("123", 1f, v -> {
-            panelMode = 1;
-            rebuildKeyboard();
-        });
-        num.setOnLongClickListener(v -> {
-            panelMode = 5;
-            rebuildKeyboard();
-            toast("九键数字键盘");
-            return true;
-        });
-        row.addView(num);
+        row.addView(makeNumberSwitchKey(1f));
         row.addView(makeCommaKey(1f));
         TextView space = spaceKey(2.6f);
         row.addView(space);
@@ -743,6 +733,48 @@ public class MiraImeService extends InputMethodService {
         }));
         row.addView(makeFunc(enterLabel(), 1.35f, v -> onEnter()));
         kbArea.addView(row);
+    }
+
+    private TextView makeNumberSwitchKey(float weight) {
+        TextView tv = makeFunc("123", weight, null);
+        final float[] start = new float[2];
+        final boolean[] swiped = new boolean[1];
+        tv.setOnTouchListener((v, e) -> {
+            switch (e.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    lastKeyTime = System.currentTimeMillis();
+                    start[0] = e.getRawX();
+                    start[1] = e.getRawY();
+                    swiped[0] = false;
+                    v.setAlpha(0.6f);
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    float dx = e.getRawX() - start[0];
+                    float dy = e.getRawY() - start[1];
+                    if (dx > dp(28) && dx > Math.abs(dy) * 1.15f) {
+                        swiped[0] = true;
+                        v.setAlpha(0.8f);
+                    }
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    v.setAlpha(1f);
+                    if (swiped[0]) {
+                        panelMode = 5;
+                        rebuildKeyboard();
+                        toast("九键数字键盘");
+                    } else {
+                        panelMode = 1;
+                        rebuildKeyboard();
+                    }
+                    return true;
+                case MotionEvent.ACTION_CANCEL:
+                    v.setAlpha(1f);
+                    return true;
+                default:
+                    return false;
+            }
+        });
+        return tv;
     }
 
     private void buildNine() {
@@ -906,6 +938,16 @@ public class MiraImeService extends InputMethodService {
         del.setOnTouchListener(backspaceTouch());
         last.addView(del);
         kbArea.addView(last);
+
+        LinearLayout punct = baseRow();
+        String symbols = ".+-*/";
+        for (int i = 0; i < symbols.length(); i++) {
+            final String s = String.valueOf(symbols.charAt(i));
+            TextView k = makeFunc(s, 1f, v -> inputNumberPad(s));
+            k.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+            punct.addView(k);
+        }
+        kbArea.addView(punct);
     }
 
     private void inputNumberPad(String n) {
@@ -1083,78 +1125,38 @@ public class MiraImeService extends InputMethodService {
 
     private LinearLayout buildAiPanel() {
         LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.HORIZONTAL);
-        box.setBackgroundColor(MiraTheme.RW_GLASS);
+        box.setOrientation(LinearLayout.VERTICAL);
         box.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(210)));
+        box.setPadding(dp(8), dp(8), dp(8), 0);
+        GradientDrawable glass = new GradientDrawable();
+        glass.setShape(GradientDrawable.RECTANGLE);
+        glass.setCornerRadius(dp(18));
+        glass.setColor((MiraTheme.RW_GLASS & 0x00FFFFFF) | 0xE6000000);
+        box.setBackground(glass);
+        box.setElevation(dp(4));
         box.setVisibility(View.GONE);
 
-        LinearLayout left = new LinearLayout(this);
-        left.setOrientation(LinearLayout.VERTICAL);
-        left.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
-        left.setPadding(dp(8), dp(4), dp(4), dp(4));
-
-        LinearLayout head = new LinearLayout(this);
-        head.setOrientation(LinearLayout.HORIZONTAL);
-        head.setGravity(Gravity.CENTER_VERTICAL);
-        head.setPadding(dp(8), dp(6), dp(6), dp(6));
-        head.setBackground(bg(MiraTheme.CARD_HI, 8));
-        head.setClickable(true);
-        TextView title = new TextView(this);
-        title.setText("AI 文段改写");
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-        title.setTextColor(MiraTheme.RW_INK);
-        title.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        head.addView(title);
-        TextView hint = new TextView(this);
-        hint.setText("下拉回填");
-        hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
-        hint.setTextColor(MiraTheme.RW_BTN_ON);
-        hint.setPadding(dp(8), 0, dp(2), 0);
-        head.addView(hint);
-        final float[] drag = new float[2];
-        head.setOnTouchListener((v, e) -> {
-            switch (e.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    drag[0] = e.getRawY();
-                    box.animate().cancel();
-                    return true;
-                case MotionEvent.ACTION_MOVE:
-                    float dy = e.getRawY() - drag[0];
-                    if (dy > 0) box.setTranslationY(Math.min(dy, dp(96)));
-                    else box.setTranslationY(Math.max(-dp(8), dy * 0.3f));
-                    return true;
-                case MotionEvent.ACTION_UP:
-                    float up = e.getRawY() - drag[0];
-                    if (up > dp(48)) applyAiText();
-                    else box.animate().translationY(0).setDuration(140).start();
-                    return true;
-                case MotionEvent.ACTION_CANCEL:
-                    box.animate().translationY(0).setDuration(140).start();
-                    return true;
-                default:
-                    return false;
-            }
-        });
-        left.addView(head);
+        LinearLayout main = new LinearLayout(this);
+        main.setOrientation(LinearLayout.HORIZONTAL);
+        main.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
         aiEdit = new EditText(this);
-        aiEdit.setBackgroundColor(MiraTheme.CARD_CELL);
+        aiEdit.setBackground(bg((MiraTheme.CARD_CELL & 0x00FFFFFF) | 0xD9000000, 12));
         aiEdit.setTextColor(MiraTheme.RW_INK);
         aiEdit.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         aiEdit.setGravity(Gravity.TOP | Gravity.START);
-        aiEdit.setPadding(dp(10), dp(6), dp(10), dp(6));
-        aiEdit.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+        aiEdit.setPadding(dp(12), dp(10), dp(12), dp(10));
+        aiEdit.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
         aiEdit.setFocusable(false);
         aiEdit.setFocusableInTouchMode(false);
         aiEdit.setClickable(false);
         aiEdit.setLongClickable(false);
         aiEdit.setCursorVisible(false);
-        left.addView(aiEdit);
-        box.addView(left);
+        main.addView(aiEdit);
 
         LinearLayout right = new LinearLayout(this);
         right.setOrientation(LinearLayout.VERTICAL);
-        right.setPadding(dp(2), dp(6), dp(6), dp(6));
+        right.setPadding(dp(6), 0, 0, 0);
         right.setLayoutParams(new LinearLayout.LayoutParams(dp(78), ViewGroup.LayoutParams.MATCH_PARENT));
         List<String> names = Prefs.splitPipe(prefs.getString(Prefs.AI_NAMES, Prefs.DEFAULT_NAMES), 4);
         for (int i = 0; i < 4; i++) {
@@ -1164,16 +1166,71 @@ public class MiraImeService extends InputMethodService {
             b.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
             b.setTextColor(MiraTheme.RW_BTN_INK);
             b.setGravity(Gravity.CENTER);
-            b.setBackground(bg(MiraTheme.RW_BTN_BG, 8));
+            b.setBackground(bg((MiraTheme.RW_BTN_BG & 0x00FFFFFF) | 0xE6000000, 10));
             LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
-            blp.bottomMargin = i < 3 ? dp(3) : 0;
+            blp.bottomMargin = i < 3 ? dp(4) : 0;
             b.setLayoutParams(blp);
             b.setOnClickListener(v -> runAiRewrite(idx));
             right.addView(b);
         }
-        box.addView(right);
+        main.addView(right);
+        box.addView(main);
+
+        FrameLayout handle = new FrameLayout(this);
+        handle.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(24)));
+        handle.setClickable(true);
+        View line = new View(this);
+        line.setBackground(bg(MiraTheme.RW_BTN_ON, 2));
+        FrameLayout.LayoutParams llp = new FrameLayout.LayoutParams(dp(44), dp(2));
+        llp.gravity = Gravity.CENTER;
+        line.setLayoutParams(llp);
+        handle.addView(line);
+        final float[] drag = new float[2];
+        handle.setOnTouchListener((v, e) -> {
+            switch (e.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    drag[0] = e.getRawY();
+                    box.animate().cancel();
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    float dy = Math.max(0, e.getRawY() - drag[0]);
+                    box.setTranslationY(dy * 0.9f);
+                    box.setAlpha(Math.max(0.35f, 1f - dy / dp(240)));
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    float up = e.getRawY() - drag[0];
+                    if (up > dp(34)) animateAiApply();
+                    else resetAiDrag();
+                    return true;
+                case MotionEvent.ACTION_CANCEL:
+                    resetAiDrag();
+                    return true;
+                default:
+                    return false;
+            }
+        });
+        box.addView(handle);
         return box;
+    }
+
+    private void resetAiDrag() {
+        aiPanel.animate().cancel();
+        aiPanel.animate().translationY(0).alpha(1f)
+                .setDuration(160)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
+    }
+
+    private void animateAiApply() {
+        aiPanel.animate().cancel();
+        aiPanel.animate()
+                .translationY(aiPanel.getHeight() + dp(16))
+                .alpha(0f)
+                .setDuration(240)
+                .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                .withEndAction(this::applyAiText)
+                .start();
     }
 
     private void onAiBeautify() {
@@ -1203,6 +1260,8 @@ public class MiraImeService extends InputMethodService {
             rwSeq++;
             rwBusySeq = 0;
             aiMode = true;
+            aiPanel.animate().cancel();
+            aiPanel.setAlpha(1f);
             aiPanel.setTranslationY(0);
             aiPanel.setVisibility(View.VISIBLE);
             aiEdit.setText(rwOriginal);
@@ -1221,6 +1280,8 @@ public class MiraImeService extends InputMethodService {
         rwSeq++;
         rwOriginal = "";
         rwOriginalLen = 0;
+        aiPanel.animate().cancel();
+        aiPanel.setAlpha(1f);
         aiPanel.setTranslationY(0);
         aiPanel.setVisibility(View.GONE);
         toast("已收起改写面板");
@@ -1228,7 +1289,9 @@ public class MiraImeService extends InputMethodService {
 
     private void applyAiText() {
         try {
+            aiPanel.setVisibility(View.GONE);
             aiPanel.setTranslationY(0);
+            aiPanel.setAlpha(1f);
             String text = aiEdit.getText().toString();
             InputConnection ic = getCurrentInputConnection();
             if (ic != null && rwOriginalLen > 0) {
@@ -1242,7 +1305,6 @@ public class MiraImeService extends InputMethodService {
             rwSeq++;
             rwOriginal = "";
             rwOriginalLen = 0;
-            aiPanel.setVisibility(View.GONE);
             toast("已回填到输入框");
         } catch (Throwable t) {
             toast("回填失败");
@@ -1286,7 +1348,7 @@ public class MiraImeService extends InputMethodService {
 
     private void buildBubbles() {
         bubbles = new TextView[3];
-        String[] labels = chinese ? new String[]{"。", "！", "？"} : new String[]{".", "!", "?"};
+        String[] labels = chinese ? new String[]{"。", "？", "@"} : new String[]{".", "?", "@"};
         for (int i = 0; i < 3; i++) {
             TextView tv = new TextView(this);
             tv.setText(labels[i]);
@@ -1307,7 +1369,7 @@ public class MiraImeService extends InputMethodService {
 
     private TextView makeCommaKey(float weight) {
         TextView tv = makeFunc(chinese ? "，" : ",", weight, null);
-        final String[] labels = chinese ? new String[]{"。", "！", "？"} : new String[]{".", "!", "?"};
+        final String[] labels = chinese ? new String[]{"。", "？", "@"} : new String[]{".", "?", "@"};
         final String base = chinese ? "，" : ",";
         tv.setOnTouchListener((v, e) -> {
             switch (e.getAction()) {
@@ -1801,10 +1863,11 @@ public class MiraImeService extends InputMethodService {
         if (composing.length() > 0 && !candidates.isEmpty()) commitCandidate(0);
         log("回车");
         try {
-            if (imeAction == EditorInfo.IME_ACTION_SEND || imeAction == EditorInfo.IME_ACTION_SEARCH
-                    || imeAction == EditorInfo.IME_ACTION_GO || imeAction == EditorInfo.IME_ACTION_DONE
-                    || imeAction == EditorInfo.IME_ACTION_NEXT || imeAction == EditorInfo.IME_ACTION_PREVIOUS) {
-                sendDefaultEditorAction(true);
+            if (imeAction == EditorInfo.IME_ACTION_DONE) {
+                commitTextSafe("\n");
+            } else if (imeAction != EditorInfo.IME_ACTION_NONE) {
+                boolean handled = sendDefaultEditorAction(true);
+                if (!handled) commitTextSafe("\n");
             } else {
                 commitTextSafe("\n");
             }
@@ -2103,12 +2166,18 @@ public class MiraImeService extends InputMethodService {
         }
         String last = word.substring(word.length() - 1);
         List<String> a = engine.associate(last);
-        if (a.isEmpty()) {
+        ArrayList<String> suffix = new ArrayList<>();
+        for (String s : a) {
+            String x = PinyinEngine.assocSuffix(word, s);
+            if (!x.isEmpty() && !suffix.contains(x)) suffix.add(x);
+            if (suffix.size() >= 10) break;
+        }
+        if (suffix.isEmpty()) {
             assocMode = false;
             candidates.clear();
         } else {
             assocMode = true;
-            candidates = a;
+            candidates = suffix;
         }
         renderCandidates();
         updatePinyinRow();
@@ -2470,6 +2539,8 @@ public class MiraImeService extends InputMethodService {
             voiceNoPerm = false;
             aiMode = false;
             if (aiPanel != null) {
+                aiPanel.animate().cancel();
+                aiPanel.setAlpha(1f);
                 aiPanel.setTranslationY(0);
                 aiPanel.setVisibility(View.GONE);
             }
