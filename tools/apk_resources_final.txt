@@ -1,0 +1,11 @@
+Binary APK
+Package name=com.meiyan.ime id=7f
+  type drawable id=01 entryCount=1
+    resource 0x7f010000 drawable/app_logo
+      () (file) res/PX.png type=PNG
+  type string id=02 entryCount=1
+    resource 0x7f020000 string/app_name
+      () "米拉之家"
+  type xml id=03 entryCount=1
+    resource 0x7f030000 xml/method
+      () (file) res/aY.xml type=XML

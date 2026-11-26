@@ -69,3 +69,10 @@ userdata/
 user_dict/
 *.userdb
 *.udict
+# ---- 本地归档与大体积内置资源（磁盘保留，不随源码提交）----
+.archive/
+.arts/
+app/src/main/assets/model.int8.onnx
+app/libs/*.aar
+# ---- Office 临时锁文件 ----
+~\$*

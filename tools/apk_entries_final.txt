@@ -1,0 +1,43 @@
+Archive:  dist/mila.apk
+ Length   Method    Size  Cmpr    Date    Time   CRC-32   Name
+--------  ------  ------- ---- ---------- ----- --------  ----
+      56  Defl:N       52   7% 1981-01-01 01:01 981abecf  META-INF/com/android/build/gradle/app-metadata.properties
+     120  Defl:N      118   2% 1981-01-01 01:01 6716a935  META-INF/version-control-info.textproto
+ 2382192  Defl:N   726048  70% 1981-01-01 01:01 44c3e7fa  classes.dex
+15988232  Defl:N  5697520  64% 1981-01-01 01:01 b7cb0625  lib/arm64-v8a/libonnxruntime.so
+ 4304688  Defl:N  1672738  61% 1981-01-01 01:01 a59e4ce9  lib/arm64-v8a/libsherpa-onnx-c-api.so
+  390616  Defl:N   124219  68% 1981-01-01 01:01 33f28e6d  lib/arm64-v8a/libsherpa-onnx-cxx-api.so
+ 4582688  Defl:N  1754096  62% 1981-01-01 01:01 9ab7bb2b  lib/arm64-v8a/libsherpa-onnx-jni.so
+11098292  Defl:N  5256622  53% 1981-01-01 01:01 e842857e  lib/armeabi-v7a/libonnxruntime.so
+ 2981812  Defl:N  1513085  49% 1981-01-01 01:01 f6a387ed  lib/armeabi-v7a/libsherpa-onnx-c-api.so
+  245280  Defl:N   103438  58% 1981-01-01 01:01 ef89de43  lib/armeabi-v7a/libsherpa-onnx-cxx-api.so
+ 3184100  Defl:N  1609541  50% 1981-01-01 01:01 55ed2331  lib/armeabi-v7a/libsherpa-onnx-jni.so
+18913696  Defl:N  6595611  65% 1981-01-01 01:01 4f7dc318  lib/x86/libonnxruntime.so
+ 4655380  Defl:N  1825769  61% 1981-01-01 01:01 2c30aee3  lib/x86/libsherpa-onnx-c-api.so
+  340920  Defl:N   127856  63% 1981-01-01 01:01 01bf5cbd  lib/x86/libsherpa-onnx-cxx-api.so
+ 4938188  Defl:N  1901352  62% 1981-01-01 01:01 57b145ed  lib/x86/libsherpa-onnx-jni.so
+18152800  Defl:N  6352338  65% 1981-01-01 01:01 389eb69e  lib/x86_64/libonnxruntime.so
+ 4649784  Defl:N  1825602  61% 1981-01-01 01:01 434c2c46  lib/x86_64/libsherpa-onnx-c-api.so
+  386152  Defl:N   125506  68% 1981-01-01 01:01 15c67c50  lib/x86_64/libsherpa-onnx-cxx-api.so
+ 4914712  Defl:N  1918348  61% 1981-01-01 01:01 282b816e  lib/x86_64/libsherpa-onnx-jni.so
+81828675  Stored 81828675   0% 1981-01-01 01:01 647fc831  assets/model.int8.onnx
+  881221  Defl:N   525797  40% 1981-01-01 01:01 2e0a82ce  assets/pinyin/abbr.txt
+  270516  Defl:N   101518  63% 1981-01-01 01:01 46de4aaf  assets/pinyin/assoc.txt
+     880  Defl:N      549  38% 1981-01-01 01:01 42e2d9db  assets/pinyin/poly.txt
+   57708  Defl:N    42197  27% 1981-01-01 01:01 aaf310ca  assets/pinyin/single.txt
+    2156  Defl:N      719  67% 1981-01-01 01:01 75be74af  assets/pinyin/syll.txt
+ 2032420  Defl:N  1153853  43% 1981-01-01 01:01 f557c165  assets/pinyin/word.txt
+   75352  Defl:N    39411  48% 1981-01-01 01:01 aa11186f  assets/tokens.txt
+     928  Defl:N      561  40% 1981-01-01 01:01 8e787046  kotlin/annotation/annotation.kotlin_builtins
+    3685  Defl:N     1521  59% 1981-01-01 01:01 f41c30cf  kotlin/collections/collections.kotlin_builtins
+     200  Defl:N      157  22% 1981-01-01 01:01 c69fe143  kotlin/coroutines/coroutines.kotlin_builtins
+     646  Defl:N      394  39% 1981-01-01 01:01 d8d2330d  kotlin/internal/internal.kotlin_builtins
+   18640  Defl:N     5252  72% 1981-01-01 01:01 f77f89dd  kotlin/kotlin.kotlin_builtins
+    3399  Defl:N     1292  62% 1981-01-01 01:01 cb3b8aed  kotlin/ranges/ranges.kotlin_builtins
+    2426  Defl:N     1286  47% 1981-01-01 01:01 7e3e3d18  kotlin/reflect/reflect.kotlin_builtins
+    3968  Defl:N     1263  68% 1981-01-01 01:01 ba7bb7b2  AndroidManifest.xml
+   13245  Stored    13245   0% 1981-01-01 01:01 a9bbd6a6  res/PX.png
+     708  Defl:N      412  42% 1981-01-01 01:01 21df671b  res/aY.xml
+     916  Stored      916   0% 1981-01-01 01:01 fadb49b9  resources.arsc
+--------          -------  ---                            -------
+187307397         122848877  34%                            38 files

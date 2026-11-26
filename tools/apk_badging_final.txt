@@ -1,0 +1,23 @@
+package: name='com.meiyan.ime' versionCode='1' versionName='1.0' platformBuildVersionName='14' platformBuildVersionCode='34' compileSdkVersion='34' compileSdkVersionCodename='14'
+sdkVersion:'24'
+targetSdkVersion:'34'
+uses-permission: name='android.permission.RECORD_AUDIO'
+uses-permission: name='android.permission.INTERNET'
+application-label:'米拉之家'
+application-icon-160:'res/PX.png'
+application: label='米拉之家' icon='res/PX.png'
+launchable-activity: name='com.meiyan.ime.SettingsActivity'  label='' icon=''
+feature-group: label=''
+  uses-feature: name='android.hardware.faketouch'
+  uses-implied-feature: name='android.hardware.faketouch' reason='default feature for all apps'
+  uses-feature: name='android.hardware.microphone'
+  uses-implied-feature: name='android.hardware.microphone' reason='requested android.permission.RECORD_AUDIO permission'
+provides-component:'ime'
+main
+other-activities
+other-receivers
+supports-screens: 'small' 'normal' 'large' 'xlarge'
+supports-any-density: 'true'
+locales: '--_--'
+densities: '160'
+native-code: 'arm64-v8a' 'armeabi-v7a' 'x86' 'x86_64'

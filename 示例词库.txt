@@ -1,0 +1,20 @@
+# 米拉之家 · 示例词库（4 种格式混排，UTF-8）
+# ① 词<TAB>拼音（推荐）
+聊天	liao tian
+你好	ni hao
+米拉之家	mi la zhi jia
+离线语音	li xian yu yin
+# ② 拼音<TAB>词|词
+mila	米拉|米拉之家
+ceshi	测试|测试员
+yuyin	语音|语音识别
+shurufa	输入法
+# ③ 空格分隔，第三列词频可省
+输入法 shu ru fa 1000
+离线语音 li xian yu yin 800
+候选词 hou xuan ci 600
+# ④ 只有词，用单字表自动注音
+拼音
+联想
+剪贴板
+常用语

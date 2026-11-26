@@ -1,0 +1,5 @@
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
+Signer #1 certificate DN: CN=Mira IME, OU=Dev, O=Mira, L=CN, ST=CN, C=CN
+Signer #1 certificate SHA-256 digest: ee3b478e5cac854c8ea18754955562ad8bd58bf98a5f2b68ec499cba4fb985d4
+Signer #1 certificate SHA-1 digest: 25bcf2a239549bd9db3733be2158bcdebb9bef0f
+Signer #1 certificate MD5 digest: 6218bb9c38e72193af8d38a47b62fc0b

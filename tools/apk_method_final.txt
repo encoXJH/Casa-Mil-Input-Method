@@ -1,0 +1,9 @@
+N: android=http://schemas.android.com/apk/res/android (line=4)
+  E: input-method (line=4)
+    A: http://schemas.android.com/apk/res/android:settingsActivity(0x01010225)="com.meiyan.ime.SettingsActivity" (Raw: "com.meiyan.ime.SettingsActivity")
+    A: http://schemas.android.com/apk/res/android:supportsSwitchingToNextInputMethod(0x010103eb)=true
+      E: subtype (line=10)
+        A: http://schemas.android.com/apk/res/android:label(0x01010001)="中文（米拉之家）" (Raw: "中文（米拉之家）")
+        A: http://schemas.android.com/apk/res/android:imeSubtypeLocale(0x010102ec)="zh_CN" (Raw: "zh_CN")
+        A: http://schemas.android.com/apk/res/android:imeSubtypeMode(0x010102ed)="keyboard" (Raw: "keyboard")
+        A: http://schemas.android.com/apk/res/android:overridesImplicitlyEnabledSubtype(0x010103a2)=true
