@@ -21,6 +21,7 @@ public class DictRepo {
     public final TreeSet<String> KEYS = new TreeSet<>();
     public final HashMap<Character, HashMap<Integer, ArrayList<String>>> BY_FIRST_LEN = new HashMap<>();
     public final HashMap<Character, String> SINGLE_REV = new HashMap<>();
+    public final HashMap<Character, LinkedHashSet<Character>> NEXT = new HashMap<>();
     public final LinkedHashSet<String> IMPORTED = new LinkedHashSet<>();
     public final LinkedHashSet<String> USER_WORDS = new LinkedHashSet<>();
 
@@ -205,6 +206,7 @@ public class DictRepo {
             if (!s.isEmpty()) SYLL.add(s);
         }
 
+        rebuildNext();
         rebuildIndex();
         loadMs = System.currentTimeMillis() - t0;
         loaded = true;
@@ -260,6 +262,7 @@ public class DictRepo {
             wordCount++;
             IMPORTED.add(word);
         }
+        indexNextWord(word);
         KEYS.add(f);
         String ab = abbrOf(f);
         if (!ab.isEmpty()) {
@@ -290,6 +293,22 @@ public class DictRepo {
         IMPORTED.remove(word);
         for (ArrayList<String> arr : WORDS.values()) arr.remove(word);
         for (ArrayList<String> arr : ABBR.values()) arr.remove(word);
+        rebuildNext();
+    }
+
+    private void indexNextWord(String w) {
+        if (w == null || w.length() < 2) return;
+        char a = w.charAt(0);
+        char b = w.charAt(1);
+        if (!isHan(a) || !isHan(b)) return;
+        NEXT.computeIfAbsent(a, k -> new LinkedHashSet<>()).add(b);
+    }
+
+    public void rebuildNext() {
+        NEXT.clear();
+        for (ArrayList<String> arr : WORDS.values()) {
+            for (String w : arr) indexNextWord(w);
+        }
     }
 
     public int importText(String text) {

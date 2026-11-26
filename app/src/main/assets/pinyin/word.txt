@@ -1497,7 +1497,7 @@ beiping	北平|被评
 laoban	老板|老伴|老版
 zhejian	这件|折箭|褶裥
 tongxue	同学
-xiaoming	校名|小命|小名|效命
+xiaoming	小明|晓明|小名|校名|小命|效命
 shandi	山地
 meijun	美军|霉菌
 nazhong	那种|哪种

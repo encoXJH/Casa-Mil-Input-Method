@@ -1,6 +1,6 @@
 Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
 Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
-LOAD 215ms  词库 91966 桶 / 135001 词 · 导入 0 · 自造 0 · 加载 211ms
+LOAD 283ms  词库 91966 桶 / 135003 词 · 导入 0 · 自造 0 · 加载 269ms
 [PASS] 首位 lt -> 聊天  cand=聊天,聊天记录,聊天室,蓝天,联通,老头,轮胎,楼梯 size=24
 [PASS] 首位 nh -> 你好  cand=你好,女孩,男孩,内涵,年会,暖和,农活,怒火 size=24
 [PASS] 包含 liaot -> 聊天  cand=辽太祖,聊天 size=2
@@ -13,6 +13,12 @@ LOAD 215ms  词库 91966 桶 / 135001 词 · 导入 0 · 自造 0 · 加载 211m
 [PASS] 包含 zang -> 张  cand=藏,脏,葬,弉,长,张,掌,粻 size=30
 [PASS] 包含 fuiyi -> 会议  cand=会议,回忆,会意,悔意,怀疑,淮夷,回音,会阴 size=16
 [PASS] 包含 zho -> 中  cand=中,种,钟爱,中巴,中坝,走,奏,揍 size=21
+[PASS] xiaoming 词语优先  cand=小明,晓明,小名,校名,小命,效命,孝明帝,小名儿 size=30
+[PASS] xiaoming 首字 小/笑/校  index=16 cand=小明,晓明,小名,校名,小命,效命,孝明帝,小名儿 size=30
+[PASS] xiaoming 首字在词语后  index=16
+[PASS] xiaoming 不推尾字 明/命  cand=小明,晓明,小名,校名,小命,效命,孝明帝,小名儿 size=30
+[PASS] 第二字 校->名首位  [名, 明, 命, 鸣, 洺, 冥, 铭, 茗, 姳, 佲, 螟, 眳, 眀, 瞑, 溟, 暝, 酩, 朙, 椧, 蓂, 鳴, 凕, 嫇, 慏, 掵, 榠, 猽, 覭, 詺, 鄍]
+[PASS] 第二字 小->明首位  [明, 名, 命, 鸣, 洺, 冥, 铭, 茗, 姳, 佲, 螟, 眳, 眀, 瞑, 溟, 暝, 酩, 朙, 椧, 蓂, 鳴, 凕, 嫇, 慏, 掵, 榠, 猽, 覭, 詺, 鄍]
 [PASS] 联想 天 含 聊天记录  [聊天记录, 聊天室, 聊天吗, 天安门, 天下, 天然, 天津, 天门, 天气, 天地]
 [PASS] lx 初始首位 联系  cand=联系,练习,理想,类型,路线,连续,利息,流行 size=24
 [PASS] lx 初始 联想 约第11位  index=10
@@ -28,5 +34,5 @@ LOAD 215ms  词库 91966 桶 / 135001 词 · 导入 0 · 自造 0 · 加载 211m
 [PASS] 导入4格式合计>=4条  n=5
 [PASS] 导入立即生效 测试词  [第三个词, 测试词]
 [PASS] 导入单候选行收下 测试员  [测试员, 测试]
-[PASS] 热态候选平均 <5ms  3539.2 us/call
-RESULT pass=28 fail=0
+[PASS] 热态候选平均 <5ms  3561.7 us/call
+RESULT pass=34 fail=0

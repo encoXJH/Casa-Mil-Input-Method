@@ -61,6 +61,8 @@ public class SettingsActivity extends Activity {
     private final MemoryStore memory = new MemoryStore();
     private final TouchModel touch = new TouchModel();
     private LinearLayout root;
+    private LinearLayout sectionContent;
+    private LinearLayout expandedContent;
     private TextView dictStat;
     private TextView memStat;
     private TextView touchStat;
@@ -157,7 +159,7 @@ public class SettingsActivity extends Activity {
             b.setLayoutParams(new LinearLayout.LayoutParams(0, dp(40), 1f));
             row.addView(b);
         }
-        root.addView(row);
+        addViewToSection(row);
         switchRow("频次上色", prefs.getBool(Prefs.FREQ_COLOR, true), (btn, checked) -> {
             prefs.putBool(Prefs.FREQ_COLOR, checked);
             MiraTheme.freqColor = checked;
@@ -231,7 +233,7 @@ public class SettingsActivity extends Activity {
         input.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         input.setTextColor(MiraTheme.PAGE_INK);
         input.setHintTextColor(MiraTheme.PAGE_SUB);
-        root.addView(input);
+        addViewToSection(input);
         rowButtons(new String[]{"添加自造词", "删除自造词"},
                 new View.OnClickListener[]{v -> {
                     String w = input.getText().toString().trim();
@@ -353,7 +355,7 @@ public class SettingsActivity extends Activity {
         test.setPadding(dp(12), dp(10), dp(12), dp(10));
         test.setMinLines(2);
         test.setGravity(Gravity.TOP | Gravity.START);
-        root.addView(test, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        addViewToSection(test, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         body("使用说明：字母键落下即上屏；空格轻点上屏首选/空格，长按语音，上划 AI 改写；逗号长按出三气泡；退格在无拼音时支持全选删除。");
     }
 
@@ -650,16 +652,76 @@ public class SettingsActivity extends Activity {
     }
 
     private void section(String title) {
+        LinearLayout block = new LinearLayout(this);
+        block.setOrientation(LinearLayout.VERTICAL);
+        block.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        LinearLayout head = new LinearLayout(this);
+        head.setOrientation(LinearLayout.HORIZONTAL);
+        head.setGravity(Gravity.CENTER_VERTICAL);
+        head.setPadding(dp(10), dp(10), dp(10), dp(10));
+        head.setTag("sectionHead");
+        head.setBackground(round(MiraTheme.PAGE_SURFACE, 8));
+        LinearLayout.LayoutParams hlp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        hlp.topMargin = dp(10);
+        head.setLayoutParams(hlp);
+
         TextView tv = new TextView(this);
         tv.setText(title);
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         tv.setTypeface(null, android.graphics.Typeface.BOLD);
         tv.setTag("title");
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.topMargin = dp(22);
-        lp.bottomMargin = dp(6);
-        tv.setLayoutParams(lp);
-        root.addView(tv);
+        tv.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        head.addView(tv);
+
+        TextView arrow = new TextView(this);
+        arrow.setText("▸");
+        arrow.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        arrow.setTag("arrow");
+        head.addView(arrow);
+
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(0, dp(4), 0, dp(8));
+        content.setVisibility(View.GONE);
+        content.setTag(arrow);
+
+        head.setOnClickListener(v -> toggleSection(content, arrow));
+        block.addView(head);
+        block.addView(content);
+        root.addView(block);
+        sectionContent = content;
+        if (expandedContent == null) {
+            content.setVisibility(View.VISIBLE);
+            arrow.setText("▾");
+            expandedContent = content;
+        }
+    }
+
+    private void toggleSection(LinearLayout content, TextView arrow) {
+        boolean show = content.getVisibility() != View.VISIBLE;
+        if (show) {
+            if (expandedContent != null && expandedContent != content) {
+                expandedContent.setVisibility(View.GONE);
+                Object old = expandedContent.getTag();
+                if (old instanceof TextView) ((TextView) old).setText("▸");
+            }
+            content.setVisibility(View.VISIBLE);
+            arrow.setText("▾");
+            expandedContent = content;
+        } else {
+            content.setVisibility(View.GONE);
+            arrow.setText("▸");
+            if (expandedContent == content) expandedContent = null;
+        }
+    }
+
+    private void addViewToSection(View v) {
+        (sectionContent != null ? sectionContent : root).addView(v);
+    }
+
+    private void addViewToSection(View v, LinearLayout.LayoutParams lp) {
+        (sectionContent != null ? sectionContent : root).addView(v, lp);
     }
 
     private TextView body(String text) {
@@ -668,7 +730,7 @@ public class SettingsActivity extends Activity {
         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         tv.setTag("sub");
         tv.setLineSpacing(0, 1.25f);
-        root.addView(tv);
+        addViewToSection(tv);
         return tv;
     }
 
@@ -696,7 +758,7 @@ public class SettingsActivity extends Activity {
             b.setLayoutParams(lp);
             row.addView(b);
         }
-        root.addView(row);
+        addViewToSection(row);
     }
 
     private void editRow(String label, String value, boolean secret, ValueSink sink) {
@@ -707,7 +769,7 @@ public class SettingsActivity extends Activity {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.topMargin = dp(10);
         l.setLayoutParams(lp);
-        root.addView(l);
+        addViewToSection(l);
         EditText et = new EditText(this);
         et.setText(value);
         et.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
@@ -729,7 +791,7 @@ public class SettingsActivity extends Activity {
                 sink.accept(s.toString());
             }
         });
-        root.addView(et);
+        addViewToSection(et);
     }
 
     private void switchRow(String label, boolean checked, android.widget.CompoundButton.OnCheckedChangeListener l) {
@@ -749,7 +811,7 @@ public class SettingsActivity extends Activity {
         sw.setChecked(checked);
         sw.setOnCheckedChangeListener(l);
         row.addView(sw);
-        root.addView(row);
+        addViewToSection(row);
     }
 
     private void applyPageColors() {
@@ -768,12 +830,16 @@ public class SettingsActivity extends Activity {
             TextView t = (TextView) v;
             if ("title".equals(tag)) t.setTextColor(MiraTheme.PAGE_TITLE);
             else if ("sub".equals(tag)) t.setTextColor(MiraTheme.PAGE_SUB);
+            else if ("arrow".equals(tag)) t.setTextColor(MiraTheme.PAGE_SUB);
             else if ("btn".equals(tag)) {
                 t.setTextColor(MiraTheme.PAGE_INK);
                 t.setBackground(round(MiraTheme.PAGE_CHIP, 8));
             } else {
                 t.setTextColor(MiraTheme.PAGE_INK);
             }
+        }
+        if ("sectionHead".equals(tag)) {
+            v.setBackground(round(MiraTheme.PAGE_SURFACE, 8));
         }
         if (v instanceof Switch) {
             Switch sw = (Switch) v;

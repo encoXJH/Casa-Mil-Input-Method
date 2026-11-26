@@ -83,8 +83,8 @@ public final class PinyinEngine {
         }
 
         if (list.size() < MAX_CANDIDATES && syls != null && !syls.isEmpty()) {
-            String last = syls.get(syls.size() - 1);
-            ArrayList<Character> arr = repo.SINGLE.get(last);
+            String first = syls.get(0);
+            ArrayList<Character> arr = repo.SINGLE.get(first);
             if (arr != null) {
                 for (Character c : arr) {
                     appendWord(list, seen, String.valueOf(c));
@@ -278,6 +278,34 @@ public final class PinyinEngine {
         ArrayList<String> arr = repo.ASSOC.get(lastChar);
         if (arr == null || arr.isEmpty()) return new ArrayList<>();
         return new ArrayList<>(arr.subList(0, Math.min(10, arr.size())));
+    }
+
+    public boolean isFirstCharCandidate(String input, String w) {
+        if (w == null || w.length() != 1) return false;
+        ArrayList<String> syls = splitSyllables(input);
+        if (syls == null || syls.size() < 2) return false;
+        ArrayList<Character> arr = repo.SINGLE.get(syls.get(0));
+        return arr != null && arr.contains(w.charAt(0));
+    }
+
+    public List<String> secondChars(String prev, String nextSyllable) {
+        ArrayList<String> out = new ArrayList<>();
+        if (prev == null || prev.isEmpty() || nextSyllable == null) return out;
+        ArrayList<Character> base = repo.SINGLE.get(nextSyllable);
+        if (base == null || base.isEmpty()) return out;
+        LinkedHashSet<Character> order = repo.NEXT.get(prev.charAt(0));
+        if (order != null) {
+            for (Character c : order) {
+                if (base.contains(c)) out.add(String.valueOf(c));
+                if (out.size() >= MAX_CANDIDATES) return out;
+            }
+        }
+        for (Character c : base) {
+            String s = String.valueOf(c);
+            if (!out.contains(s)) out.add(s);
+            if (out.size() >= MAX_CANDIDATES) break;
+        }
+        return out;
     }
 
     public boolean hasPinyinHit(String q) {

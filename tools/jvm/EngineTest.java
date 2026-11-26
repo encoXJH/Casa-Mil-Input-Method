@@ -72,6 +72,19 @@ public class EngineTest {
         contains("fuiyi", "会议");
         contains("zho", "中");
 
+        List<String> xm = eng.candidates("xiaoming");
+        check("xiaoming 词语优先", xm.contains("小明") && xm.contains("晓明")
+                && xm.contains("小名") && xm.contains("效命"), head(xm));
+        int xiaoAt = xm.indexOf("小");
+        check("xiaoming 首字 小/笑/校", xiaoAt >= 0 && xm.contains("笑") && xm.contains("校"),
+                "index=" + xiaoAt + " " + head(xm));
+        check("xiaoming 首字在词语后", xiaoAt >= 4, "index=" + xiaoAt);
+        check("xiaoming 不推尾字 明/命", !xm.contains("明") && !xm.contains("命"), head(xm));
+        List<String> sc = eng.secondChars("校", "ming");
+        check("第二字 校->名首位", !sc.isEmpty() && sc.get(0).equals("名"), sc.toString());
+        List<String> sc2 = eng.secondChars("小", "ming");
+        check("第二字 小->明首位", !sc2.isEmpty() && sc2.get(0).equals("明"), sc2.toString());
+
         List<String> as = eng.associate("天");
         check("联想 天 含 聊天记录", as.contains("聊天记录"), as.toString());
 

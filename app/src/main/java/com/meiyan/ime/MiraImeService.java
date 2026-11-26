@@ -87,7 +87,7 @@ public class MiraImeService extends InputMethodService {
     private LinearLayout root;
     private LinearLayout aiPanel;
     private EditText aiEdit;
-    private TextView aiHandle;
+
     private FrameLayout topBar;
     private LinearLayout toolRow;
     private LinearLayout pinyinRow;
@@ -103,6 +103,10 @@ public class MiraImeService extends InputMethodService {
     private final StringBuilder composing = new StringBuilder();
     private List<String> candidates = new ArrayList<>();
     private boolean assocMode;
+    private boolean secondCharMode;
+    private String secondPrev = "";
+    private String secondSyllable = "";
+    private List<String> secondCandidates = new ArrayList<>();
     private boolean chinese = true;
     private boolean password;
     private int imeAction = EditorInfo.IME_ACTION_NONE;
@@ -419,19 +423,19 @@ public class MiraImeService extends InputMethodService {
             renderCandidates();
             toast("选择布局");
         }));
-        bar.addView(toolButton("语", v -> {
-            layoutMenu = false;
-            seqCandidates.clear();
-            panelMode = 3;
-            rebuildKeyboard();
-            toast("常用语");
-        }));
-        bar.addView(toolButton("脸", v -> {
+        bar.addView(smileyButton(v -> {
             layoutMenu = false;
             seqCandidates.clear();
             panelMode = 2;
             rebuildKeyboard();
             toast("表情");
+        }));
+        bar.addView(toolButton("常", v -> {
+            layoutMenu = false;
+            seqCandidates.clear();
+            panelMode = 3;
+            rebuildKeyboard();
+            toast("常用语");
         }));
         bar.addView(toolButton("贴", v -> {
             layoutMenu = false;
@@ -464,6 +468,45 @@ public class MiraImeService extends InputMethodService {
         return tv;
     }
 
+    private View smileyButton(View.OnClickListener l) {
+        SmileView view = new SmileView(this);
+        view.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(36)));
+        view.setOnClickListener(l);
+        view.setContentDescription("表情");
+        return view;
+    }
+
+    private class SmileView extends View {
+        private final Paint paint = new Paint();
+
+        SmileView(Context context) {
+            super(context);
+            paint.setAntiAlias(true);
+            paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setStrokeJoin(Paint.Join.ROUND);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            paint.setColor(MiraTheme.KEY_TEXT);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(dp(1.5f));
+            float cx = getWidth() / 2f;
+            float cy = getHeight() / 2f;
+            float r = Math.min(getWidth(), getHeight()) / 2f - dp(7);
+            canvas.drawCircle(cx, cy, r, paint);
+            paint.setStyle(Paint.Style.FILL);
+            float er = Math.max(dp(1.2f), r * 0.075f);
+            canvas.drawCircle(cx - r * 0.32f, cy - r * 0.20f, er, paint);
+            canvas.drawCircle(cx + r * 0.32f, cy - r * 0.20f, er, paint);
+            paint.setStyle(Paint.Style.STROKE);
+            android.graphics.RectF mouth = new android.graphics.RectF(
+                    cx - r * 0.52f, cy - r * 0.22f, cx + r * 0.52f, cy + r * 0.62f);
+            canvas.drawArc(mouth, 20f, 140f, false, paint);
+        }
+    }
+
     private LinearLayout buildPinyinRow() {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -486,6 +529,7 @@ public class MiraImeService extends InputMethodService {
         clearView.setOnClickListener(v -> {
             composing.setLength(0);
             assocMode = false;
+            clearSecondCharMode();
             candidates.clear();
             refreshCandidates();
             updatePinyinRow();
@@ -513,6 +557,7 @@ public class MiraImeService extends InputMethodService {
                 if (panelMode == 1) buildSymbolPanel();
                 else if (panelMode == 2) buildEmojiPanel();
                 else if (panelMode == 3) buildPhrasePanel();
+                else if (panelMode == 5) buildNumberPad();
                 else buildClipPanel();
             } else if (layoutMode == 1) {
                 buildNine();
@@ -670,10 +715,17 @@ public class MiraImeService extends InputMethodService {
 
     private void addBottomRow(boolean nine) {
         LinearLayout row = baseRow();
-        row.addView(makeFunc("123", 1f, v -> {
+        TextView num = makeFunc("123", 1f, v -> {
             panelMode = 1;
             rebuildKeyboard();
-        }));
+        });
+        num.setOnLongClickListener(v -> {
+            panelMode = 5;
+            rebuildKeyboard();
+            toast("九键数字键盘");
+            return true;
+        });
+        row.addView(num);
         row.addView(makeCommaKey(1f));
         TextView space = spaceKey(2.6f);
         row.addView(space);
@@ -827,6 +879,39 @@ public class MiraImeService extends InputMethodService {
             updatePinyinRow();
         }));
         kbArea.addView(row4);
+    }
+
+    private void buildNumberPad() {
+        String[] rows = {"123", "456", "789"};
+        for (String digits : rows) {
+            LinearLayout row = baseRow();
+            for (int i = 0; i < 3; i++) {
+                final String n = String.valueOf(digits.charAt(i));
+                TextView k = makeFunc(n, 1f, v -> inputNumberPad(n));
+                k.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                row.addView(k);
+            }
+            kbArea.addView(row);
+        }
+        LinearLayout last = baseRow();
+        last.addView(makeFunc("⌨", 1f, v -> {
+            panelMode = 0;
+            layoutMenu = false;
+            rebuildKeyboard();
+        }));
+        TextView zero = makeFunc("0", 1f, v -> inputNumberPad("0"));
+        zero.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        last.addView(zero);
+        TextView del = makeFunc("⌫", 1f, v -> onBackspace());
+        del.setOnTouchListener(backspaceTouch());
+        last.addView(del);
+        kbArea.addView(last);
+    }
+
+    private void inputNumberPad(String n) {
+        seqCandidates.clear();
+        layoutMenu = false;
+        commitTextSafe(n);
     }
 
     private void handlePunct(String s) {
@@ -998,29 +1083,59 @@ public class MiraImeService extends InputMethodService {
 
     private LinearLayout buildAiPanel() {
         LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
+        box.setOrientation(LinearLayout.HORIZONTAL);
         box.setBackgroundColor(MiraTheme.RW_GLASS);
         box.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(210)));
         box.setVisibility(View.GONE);
 
+        LinearLayout left = new LinearLayout(this);
+        left.setOrientation(LinearLayout.VERTICAL);
+        left.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
+        left.setPadding(dp(8), dp(4), dp(4), dp(4));
+
         LinearLayout head = new LinearLayout(this);
         head.setOrientation(LinearLayout.HORIZONTAL);
         head.setGravity(Gravity.CENTER_VERTICAL);
-        head.setPadding(dp(10), dp(4), dp(10), 0);
+        head.setPadding(dp(8), dp(6), dp(6), dp(6));
+        head.setBackground(bg(MiraTheme.CARD_HI, 8));
+        head.setClickable(true);
         TextView title = new TextView(this);
         title.setText("AI 文段改写");
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         title.setTextColor(MiraTheme.RW_INK);
         title.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         head.addView(title);
-        aiHandle = new TextView(this);
-        aiHandle.setText("⌄ 回填");
-        aiHandle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        aiHandle.setTextColor(MiraTheme.RW_BTN_ON);
-        aiHandle.setPadding(dp(8), dp(2), dp(8), dp(2));
-        aiHandle.setOnClickListener(v -> applyAiText());
-        head.addView(aiHandle);
-        box.addView(head);
+        TextView hint = new TextView(this);
+        hint.setText("下拉回填");
+        hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        hint.setTextColor(MiraTheme.RW_BTN_ON);
+        hint.setPadding(dp(8), 0, dp(2), 0);
+        head.addView(hint);
+        final float[] drag = new float[2];
+        head.setOnTouchListener((v, e) -> {
+            switch (e.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    drag[0] = e.getRawY();
+                    box.animate().cancel();
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    float dy = e.getRawY() - drag[0];
+                    if (dy > 0) box.setTranslationY(Math.min(dy, dp(96)));
+                    else box.setTranslationY(Math.max(-dp(8), dy * 0.3f));
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    float up = e.getRawY() - drag[0];
+                    if (up > dp(48)) applyAiText();
+                    else box.animate().translationY(0).setDuration(140).start();
+                    return true;
+                case MotionEvent.ACTION_CANCEL:
+                    box.animate().translationY(0).setDuration(140).start();
+                    return true;
+                default:
+                    return false;
+            }
+        });
+        left.addView(head);
 
         aiEdit = new EditText(this);
         aiEdit.setBackgroundColor(MiraTheme.CARD_CELL);
@@ -1034,12 +1149,13 @@ public class MiraImeService extends InputMethodService {
         aiEdit.setClickable(false);
         aiEdit.setLongClickable(false);
         aiEdit.setCursorVisible(false);
-        box.addView(aiEdit);
+        left.addView(aiEdit);
+        box.addView(left);
 
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(6), dp(4), dp(6), dp(4));
+        LinearLayout right = new LinearLayout(this);
+        right.setOrientation(LinearLayout.VERTICAL);
+        right.setPadding(dp(2), dp(6), dp(6), dp(6));
+        right.setLayoutParams(new LinearLayout.LayoutParams(dp(78), ViewGroup.LayoutParams.MATCH_PARENT));
         List<String> names = Prefs.splitPipe(prefs.getString(Prefs.AI_NAMES, Prefs.DEFAULT_NAMES), 4);
         for (int i = 0; i < 4; i++) {
             final int idx = i;
@@ -1049,11 +1165,14 @@ public class MiraImeService extends InputMethodService {
             b.setTextColor(MiraTheme.RW_BTN_INK);
             b.setGravity(Gravity.CENTER);
             b.setBackground(bg(MiraTheme.RW_BTN_BG, 8));
-            b.setLayoutParams(new LinearLayout.LayoutParams(0, dp(38), 1f));
+            LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f);
+            blp.bottomMargin = i < 3 ? dp(3) : 0;
+            b.setLayoutParams(blp);
             b.setOnClickListener(v -> runAiRewrite(idx));
-            row.addView(b);
+            right.addView(b);
         }
-        box.addView(row);
+        box.addView(right);
         return box;
     }
 
@@ -1084,6 +1203,7 @@ public class MiraImeService extends InputMethodService {
             rwSeq++;
             rwBusySeq = 0;
             aiMode = true;
+            aiPanel.setTranslationY(0);
             aiPanel.setVisibility(View.VISIBLE);
             aiEdit.setText(rwOriginal);
             aiEdit.setSelection(aiEdit.length());
@@ -1101,12 +1221,14 @@ public class MiraImeService extends InputMethodService {
         rwSeq++;
         rwOriginal = "";
         rwOriginalLen = 0;
+        aiPanel.setTranslationY(0);
         aiPanel.setVisibility(View.GONE);
         toast("已收起改写面板");
     }
 
     private void applyAiText() {
         try {
+            aiPanel.setTranslationY(0);
             String text = aiEdit.getText().toString();
             InputConnection ic = getCurrentInputConnection();
             if (ic != null && rwOriginalLen > 0) {
@@ -1380,6 +1502,12 @@ public class MiraImeService extends InputMethodService {
     private void onSpaceTap() {
         seqCandidates.clear();
         layoutMenu = false;
+        if (secondCharMode) {
+            clearSecondCharMode();
+            candidates.clear();
+            renderCandidates();
+            updatePinyinRow();
+        }
         if (aiMode) {
             clearComposingRow();
             aiInsert(" ");
@@ -1586,6 +1714,13 @@ public class MiraImeService extends InputMethodService {
     private void onBackspace() {
         seqCandidates.clear();
         layoutMenu = false;
+        if (secondCharMode) {
+            clearSecondCharMode();
+            candidates.clear();
+            renderCandidates();
+            updatePinyinRow();
+            return;
+        }
         if (aiMode) {
             if (composing.length() > 0) {
                 composing.setLength(composing.length() - 1);
@@ -1652,6 +1787,12 @@ public class MiraImeService extends InputMethodService {
     private void onEnter() {
         seqCandidates.clear();
         layoutMenu = false;
+        if (secondCharMode) {
+            clearSecondCharMode();
+            candidates.clear();
+            renderCandidates();
+            updatePinyinRow();
+        }
         if (aiMode) {
             clearComposingRow();
             aiInsert("\n");
@@ -1705,6 +1846,7 @@ public class MiraImeService extends InputMethodService {
     }
 
     private void inputLetter(char c) {
+        clearSecondCharMode();
         seqCandidates.clear();
         layoutMenu = false;
         if (aiMode && !chinese) {
@@ -1749,6 +1891,12 @@ public class MiraImeService extends InputMethodService {
             candidates = new ArrayList<>();
             seqCandidates.clear();
             layoutMenu = false;
+            renderCandidates();
+            return;
+        }
+        if (secondCharMode) {
+            candidates = new ArrayList<>(secondCandidates);
+            assocMode = false;
             renderCandidates();
             return;
         }
@@ -1843,9 +1991,9 @@ public class MiraImeService extends InputMethodService {
             candScroll.post(() -> candScroll.scrollTo(0, 0));
             return;
         }
-        if (assocMode) {
+        if (assocMode || secondCharMode) {
             TextView tag = new TextView(this);
-            tag.setText("联想");
+            tag.setText(secondCharMode ? "第二字" : "联想");
             tag.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             tag.setTextColor(MiraTheme.CARD_SUB);
             tag.setPadding(dp(6), 0, dp(8), 0);
@@ -1853,7 +2001,7 @@ public class MiraImeService extends InputMethodService {
             candRow.addView(tag);
         }
         if (candidates.isEmpty()) {
-            if (!assocMode && !password && composing.length() == 0 && clipPreview != null
+            if (!assocMode && !secondCharMode && !password && composing.length() == 0 && clipPreview != null
                     && System.currentTimeMillis() - clipAt < 90000) {
                 TextView clip = new TextView(this);
                 clip.setText("粘贴：" + clipPreview);
@@ -1907,6 +2055,33 @@ public class MiraImeService extends InputMethodService {
         seqCandidates.clear();
         layoutMenu = false;
         log("候选 " + preview(w, 6));
+        if (secondCharMode) {
+            commitTextSafe(w);
+            clearSecondCharMode();
+            composing.setLength(0);
+            assocMode = false;
+            candidates.clear();
+            showAssoc(w);
+            return;
+        }
+        String q = composing.toString();
+        if (chinese && !password && !aiMode && engine != null
+                && q.length() > 1 && engine.isFirstCharCandidate(q, w)) {
+            ArrayList<String> syls = engine.splitSyllables(q);
+            String next = syls != null && syls.size() > 1 ? syls.get(1) : "";
+            commitTextSafe(w);
+            composing.setLength(0);
+            assocMode = false;
+            candidates.clear();
+            secondCharMode = true;
+            secondPrev = w;
+            secondSyllable = next;
+            secondCandidates = engine.secondChars(w, next);
+            candidates = new ArrayList<>(secondCandidates);
+            renderCandidates();
+            updatePinyinRow();
+            return;
+        }
         commitTextSafe(w);
         composing.setLength(0);
         assocMode = false;
@@ -1921,7 +2096,7 @@ public class MiraImeService extends InputMethodService {
     }
 
     private void showAssoc(String word) {
-        if (aiMode || password || !chinese || !dictLoaded || engine == null || word == null || word.isEmpty()) {
+        if (secondCharMode || aiMode || password || !chinese || !dictLoaded || engine == null || word == null || word.isEmpty()) {
             renderCandidates();
             updatePinyinRow();
             return;
@@ -1939,7 +2114,15 @@ public class MiraImeService extends InputMethodService {
         updatePinyinRow();
     }
 
+    private void clearSecondCharMode() {
+        secondCharMode = false;
+        secondPrev = "";
+        secondSyllable = "";
+        secondCandidates.clear();
+    }
+
     private void clearComposingRow() {
+        clearSecondCharMode();
         if (composing.length() == 0 && !assocMode) return;
         composing.setLength(0);
         assocMode = false;
@@ -2202,11 +2385,11 @@ public class MiraImeService extends InputMethodService {
 
     private void updatePinyinRow() {
         if (pinyinView == null || toolRow == null || pinyinRow == null) return;
-        boolean has = composing.length() > 0 || assocMode || password || !chinese
+        boolean has = composing.length() > 0 || assocMode || secondCharMode || password || !chinese
                 || recording || voiceStarted || voicePreparing || voiceNoPerm || !dictLoaded;
         pinyinRow.setVisibility(has ? View.VISIBLE : View.GONE);
         toolRow.setVisibility(has ? View.GONE : View.VISIBLE);
-        clearView.setVisibility((composing.length() > 0 || assocMode) ? View.VISIBLE : View.GONE);
+        clearView.setVisibility((composing.length() > 0 || assocMode || secondCharMode) ? View.VISIBLE : View.GONE);
         if (recording || voiceStarted) {
             String t = "🎤 正在录音… 松开识别";
             if (voicePreviewText != null && !voicePreviewText.isEmpty()) t += "  " + voicePreviewText;
@@ -2257,6 +2440,12 @@ public class MiraImeService extends InputMethodService {
             pinyinView.setTextColor(MiraTheme.CARD_SUB);
             return;
         }
+        if (secondCharMode) {
+            pinyinView.setText("第二字 · 已选 " + secondPrev);
+            pinyinView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+            pinyinView.setTextColor(MiraTheme.CARD_SUB);
+            return;
+        }
         String s = "拼音 · lt=聊天";
         if (engine != null && engine.isFuzzyEnabled()) s += " · 模糊已开";
         pinyinView.setText(s);
@@ -2272,6 +2461,7 @@ public class MiraImeService extends InputMethodService {
             password = isPassword(info);
             composing.setLength(0);
             assocMode = false;
+            clearSecondCharMode();
             candidates.clear();
             seqCandidates.clear();
             layoutMenu = false;
@@ -2279,7 +2469,10 @@ public class MiraImeService extends InputMethodService {
             voicePreparing = false;
             voiceNoPerm = false;
             aiMode = false;
-            if (aiPanel != null) aiPanel.setVisibility(View.GONE);
+            if (aiPanel != null) {
+                aiPanel.setTranslationY(0);
+                aiPanel.setVisibility(View.GONE);
+            }
             int theme = prefs.getInt(Prefs.THEME, MiraTheme.MIRA);
             boolean fc = prefs.getBool(Prefs.FREQ_COLOR, true);
             boolean needRebuild = theme != MiraTheme.index || fc != MiraTheme.freqColor;
