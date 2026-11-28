@@ -26,6 +26,8 @@ public final class Prefs {
     public static final String AI_PROMPTS = "ai_prompts";
     public static final String AI_DOCS = "ai_docs";
     public static final String LOG = "selfcheck_log";
+    public static final String HAPTIC_ON = "haptic_on";
+    public static final String HAPTIC_LEVEL = "haptic_level";
 
     public static final String DEFAULT_URL = "https://api.deepseek.com/chat/completions";
     public static final String DEFAULT_MODEL = "deepseek-flash";

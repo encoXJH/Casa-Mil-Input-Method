@@ -116,6 +116,7 @@ public class SettingsActivity extends Activity {
         addDictSection();
         addMemorySection();
         addTouchSection();
+        addHapticSection();
         addVoiceSection();
         addTestSection();
         addDiagSection();
@@ -299,6 +300,30 @@ public class SettingsActivity extends Activity {
                     refreshStats();
                     toast("画像已清空");
                 }});
+    }
+
+    private void addHapticSection() {
+        section("按键震动");
+        switchRow("启用按键震动", prefs.getBool(Prefs.HAPTIC_ON, false), (b, c) -> {
+            prefs.putBool(Prefs.HAPTIC_ON, c);
+            toast(c ? "按键震动已开" : "按键震动已关");
+        });
+        final TextView levelStat = body("当前档位：" + hapticLevelName(prefs.getInt(Prefs.HAPTIC_LEVEL, 1)));
+        rowButtons(new String[]{"轻", "中", "强"}, new View.OnClickListener[]{
+                v -> setHapticLevel(0, levelStat),
+                v -> setHapticLevel(1, levelStat),
+                v -> setHapticLevel(2, levelStat)});
+        body("默认关闭。开启后按下字母、数字、符号、空格、退格等键会震动，强度由档位决定。");
+    }
+
+    private void setHapticLevel(int level, TextView stat) {
+        prefs.putInt(Prefs.HAPTIC_LEVEL, level);
+        stat.setText("当前档位：" + hapticLevelName(level));
+        toast("震动档位：" + hapticLevelName(level));
+    }
+
+    private String hapticLevelName(int level) {
+        return level == 0 ? "轻" : level == 2 ? "强" : "中";
     }
 
     private void addVoiceSection() {

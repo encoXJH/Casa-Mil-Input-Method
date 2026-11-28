@@ -17,6 +17,8 @@ import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -179,6 +181,23 @@ public class MiraImeService extends InputMethodService {
         loadDict();
         new Thread(() -> voice.init(this), "voice-init").start();
         registerClipListener();
+    }
+
+    private void haptic() {
+        try {
+            if (!prefs.getBool(Prefs.HAPTIC_ON, false)) return;
+            Vibrator vb = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            if (vb == null || !vb.hasVibrator()) return;
+            int level = prefs.getInt(Prefs.HAPTIC_LEVEL, 1);
+            long ms = level == 0 ? 12 : level == 2 ? 40 : 24;
+            if (Build.VERSION.SDK_INT >= 26) {
+                int amp = level == 0 ? 40 : level == 2 ? 255 : 120;
+                vb.vibrate(VibrationEffect.createOneShot(ms, amp));
+            } else {
+                vb.vibrate(ms);
+            }
+        } catch (Throwable ignored) {
+        }
     }
 
     private void loadDict() {
@@ -681,6 +700,7 @@ public class MiraImeService extends InputMethodService {
         tv.setOnTouchListener((v, e) -> {
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
                 lastKeyTime = System.currentTimeMillis();
+                haptic();
                 v.setAlpha(0.6f);
                 float nx = v.getWidth() > 0 ? e.getX() / v.getWidth() : 0.5f;
                 float ny = v.getHeight() > 0 ? e.getY() / v.getHeight() : 0.5f;
@@ -705,7 +725,12 @@ public class MiraImeService extends InputMethodService {
         tv.setGravity(Gravity.CENTER);
         tv.setBackground(bg(MiraTheme.FUNC, 8));
         tv.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, weight));
-        tv.setOnClickListener(l);
+        if (l != null) {
+            tv.setOnClickListener(v -> {
+                haptic();
+                l.onClick(v);
+            });
+        }
         return tv;
     }
 
@@ -822,6 +847,7 @@ public class MiraImeService extends InputMethodService {
         tv.setOnTouchListener((v, e) -> {
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
                 lastKeyTime = System.currentTimeMillis();
+                haptic();
                 v.setAlpha(0.6f);
                 ninePress(letters);
                 return true;
@@ -1375,6 +1401,7 @@ public class MiraImeService extends InputMethodService {
             switch (e.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     lastKeyTime = System.currentTimeMillis();
+                    haptic();
                     v.setAlpha(0.6f);
                     downX = e.getRawX();
                     downY = e.getRawY();
@@ -1505,6 +1532,7 @@ public class MiraImeService extends InputMethodService {
             switch (e.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     lastKeyTime = System.currentTimeMillis();
+                    haptic();
                     v.setAlpha(0.6f);
                     downX = e.getRawX();
                     downY = e.getRawY();
@@ -1739,6 +1767,7 @@ public class MiraImeService extends InputMethodService {
         return (v, e) -> {
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
                 lastKeyTime = System.currentTimeMillis();
+                haptic();
                 v.setAlpha(0.7f);
                 log("退格");
                 onBackspace();
