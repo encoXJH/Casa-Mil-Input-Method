@@ -11,12 +11,20 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 public final class DeepSeekClient {
     public static class Result {
         public boolean ok;
         public String text;
         public String error;
+    }
+
+    public static class ModelList {
+        public boolean ok;
+        public String error;
+        public final ArrayList<String> models = new ArrayList<>();
     }
 
     private DeepSeekClient() {
@@ -74,6 +82,61 @@ public final class DeepSeekClient {
             }
             r.ok = true;
             r.text = text.trim();
+            return r;
+        } catch (Exception e) {
+            r.error = "网络异常：" + e.getClass().getSimpleName();
+            return r;
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
+    }
+
+    public static ModelList fetchModels(Context ctx) {
+        Prefs p = new Prefs(ctx);
+        ModelList r = new ModelList();
+        String key = p.getString(Prefs.AI_KEY, "").trim();
+        if (key.isEmpty()) {
+            r.error = "未填写 API Key，请先填写";
+            return r;
+        }
+        String url = p.getString(Prefs.AI_URL, Prefs.DEFAULT_URL).trim();
+        if (url.isEmpty()) url = Prefs.DEFAULT_URL;
+        while (url.endsWith("/")) url = url.substring(0, url.length() - 1);
+        if (url.endsWith("/chat/completions")) {
+            url = url.substring(0, url.length() - "/chat/completions".length());
+        }
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) new URL(url + "/models").openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(20000);
+            conn.setReadTimeout(30000);
+            conn.setRequestProperty("Authorization", "Bearer " + key);
+            int code = conn.getResponseCode();
+            InputStream in = code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream();
+            String resp = readAll(in);
+            if (code < 200 || code >= 300) {
+                r.error = "HTTP " + code + " " + trim(resp, 160);
+                return r;
+            }
+            LinkedHashSet<String> ids = new LinkedHashSet<>();
+            int i = resp.indexOf("\"id\"");
+            while (i >= 0) {
+                int colon = resp.indexOf(':', i + 4);
+                int q1 = colon < 0 ? -1 : resp.indexOf('"', colon + 1);
+                if (q1 < 0) break;
+                int q2 = resp.indexOf('"', q1 + 1);
+                if (q2 < 0) break;
+                String id = resp.substring(q1 + 1, q2).trim();
+                if (!id.isEmpty()) ids.add(id);
+                i = resp.indexOf("\"id\"", q2 + 1);
+            }
+            r.models.addAll(ids);
+            if (r.models.isEmpty()) {
+                r.error = "接口未返回模型列表，可手动填写模型名";
+                return r;
+            }
+            r.ok = true;
             return r;
         } catch (Exception e) {
             r.error = "网络异常：" + e.getClass().getSimpleName();

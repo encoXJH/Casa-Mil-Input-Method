@@ -178,7 +178,31 @@ public class SettingsActivity extends Activity {
         editRow("API Key", prefs.getString(Prefs.AI_KEY, ""), true, v -> prefs.putString(Prefs.AI_KEY, v));
         editRow("接口 URL", prefs.getString(Prefs.AI_URL, Prefs.DEFAULT_URL), false, v -> prefs.putString(Prefs.AI_URL, v));
         editRow("模型", prefs.getString(Prefs.AI_MODEL, Prefs.DEFAULT_MODEL), false, v -> prefs.putString(Prefs.AI_MODEL, v));
-        rowButtons(new String[]{"测试连接"}, new View.OnClickListener[]{v -> testConnection()});
+        rowButtons(new String[]{"获取模型列表", "测试连接"}, new View.OnClickListener[]{v -> fetchModels(), v -> testConnection()});
+        body("「获取模型列表」会根据接口 URL 请求对应的 /models 接口，列出该 Key 可用的模型供点选；若服务商不支持该接口，仍可手动填写模型名。");
+    }
+
+    private void fetchModels() {
+        toast("正在获取模型列表…");
+        new Thread(() -> {
+            DeepSeekClient.ModelList r = DeepSeekClient.fetchModels(this);
+            runOnUiThread(() -> {
+                if (!r.ok) {
+                    toast("获取失败：" + r.error);
+                    return;
+                }
+                String[] items = r.models.toArray(new String[0]);
+                new AlertDialog.Builder(this)
+                        .setTitle("选择模型（共 " + items.length + " 个）")
+                        .setItems(items, (d, which) -> {
+                            prefs.putString(Prefs.AI_MODEL, items[which]);
+                            toast("已选择模型：" + items[which]);
+                            recreate();
+                        })
+                        .setNegativeButton("取消", null)
+                        .show();
+            });
+        }, "ai-models").start();
     }
 
     private void addAiButtonsSection() {
